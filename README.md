@@ -1,6 +1,16 @@
-Dummy password scheme plugin
-============================
+Libsodium password hashing schemes plugin
+=========================================
 
-You can use this to develop new password scheme plugin for dovecot.
+Requires installed libsodium: https://download.libsodium.org/doc/installation/
 
-This is not officially supported by Dovecot Oy.
+
+Configure, Compile, Install the plugin:
+
+./autogen.sh
+
+./configure
+
+make
+
+sudo make install
+
