@@ -16,17 +16,18 @@
 static void scrypt_generate(const char *plaintext, const char *user ATTR_UNUSED,
                    const unsigned char **raw_password_r, size_t *size_r)
 {
-        char *password;
-
-        password = t_malloc(crypto_pwhash_scryptsalsa208sha256_STRBYTES);
-        if (crypto_pwhash_scryptsalsa208sha256_str
-                (password, plaintext, strlen(plaintext),
+        int ec;
+        string_t *password = t_str_new(crypto_pwhash_scryptsalsa208sha256_STRBYTES);
+        if ((ec = crypto_pwhash_scryptsalsa208sha256_str
+                (str_c_modifiable(password), plaintext, strlen(plaintext),
                  crypto_pwhash_scryptsalsa208sha256_OPSLIMIT_INTERACTIVE,
-                 crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE) != 0) {
-                abort();
+                 crypto_pwhash_scryptsalsa208sha256_MEMLIMIT_INTERACTIVE)) != 0) {
+                i_error("scrypt: Hashing error: %d", ec);
+                i_unreached();
         }
-        *raw_password_r = (const unsigned char *)password;
-        *size_r = strlen(password);
+        str_truncate(password, crypto_pwhash_scryptsalsa208sha256_STRBYTES);
+        *raw_password_r = buffer_get_data(password, NULL);
+        *size_r = strlen(str_c(password));
 }
 
 static int scrypt_verify(const char *plaintext, const char *user ATTR_UNUSED,
@@ -46,17 +47,18 @@ static int scrypt_verify(const char *plaintext, const char *user ATTR_UNUSED,
 static void argon2_generate(const char *plaintext, const char *user ATTR_UNUSED,
                    const unsigned char **raw_password_r, size_t *size_r)
 {
-        char *password;
-
-        password = t_malloc(crypto_pwhash_scryptsalsa208sha256_STRBYTES);
-        if (crypto_pwhash_str
-                (password, plaintext, strlen(plaintext),
+	int ec;
+        string_t *password = t_str_new(crypto_pwhash_STRBYTES);
+        if ((ec = crypto_pwhash_str
+                (str_c_modifiable(password), plaintext, strlen(plaintext),
                  crypto_pwhash_OPSLIMIT_INTERACTIVE,
-                 crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-                abort();
+                 crypto_pwhash_MEMLIMIT_INTERACTIVE)) != 0) {
+                i_error("argon2: Hashing error: %d", ec);
+                i_unreached();
         }
-        *raw_password_r = (const unsigned char *)password;
-        *size_r = strlen(password);
+        str_truncate(password, crypto_pwhash_STRBYTES);
+        *raw_password_r = buffer_get_data(password, NULL);
+        *size_r = strlen(str_c(password));
 }
 
 static int argon2_verify(const char *plaintext, const char *user ATTR_UNUSED,
